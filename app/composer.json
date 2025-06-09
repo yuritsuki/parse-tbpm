@@ -17,6 +17,7 @@
     ],
     "require": {
         "php": "^8.2.0",
+        "illuminate/database": "^11.5",
         "intonate/tinker-zero": "^1.2",
         "laravel-zero/framework": "^11.36.1"
     },
@@ -48,5 +49,5 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "bin": ["application"]
+    "bin": ["artisan"]
 }
