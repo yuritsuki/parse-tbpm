@@ -13,6 +13,10 @@ RUN apt-get update && apt-get install -y \
     git \
     mariadb-client \
     sshpass  \
+    procps \
+    telnet \
+    iproute2 \
+    iputils-ping \
     && docker-php-ext-install pdo_mysql
 
 # Install Composer
@@ -28,6 +32,6 @@ COPY . .
 RUN composer install
 
 # Set permissions (optional)
-RUN chmod +x ./application
+RUN chmod +x ./artisan
 
 CMD ["php", "./application"]
