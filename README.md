@@ -14,7 +14,7 @@ A custom Laravel Zero boilerplate for quickly building console applications with
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/laravel-zero-boilerplate.git
+git clone https://github.com/yuritsuki/laravel-zero-boilerplate.git
 cd laravel-zero-boilerplate
 ```
 
