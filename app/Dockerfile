@@ -4,11 +4,13 @@ FROM php:8.2-cli
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
-    unzip \
+    libxml2-dev \
     libpng-dev \
     libonig-dev \
-    libxml2-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     zip \
+    unzip \
     curl \
     git \
     mariadb-client \
@@ -17,7 +19,18 @@ RUN apt-get update && apt-get install -y \
     telnet \
     iproute2 \
     iputils-ping \
-    && docker-php-ext-install pdo_mysql
+    && export EXTRA_CFLAGS="-I/usr/src/php" \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+      mbstring  \
+      pdo_mysql \
+      zip \
+      dom \
+      xml \
+      gd \
+      iconv \
+      simplexml \
+      xmlreader
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
