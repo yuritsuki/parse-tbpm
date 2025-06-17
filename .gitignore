@@ -1,4 +1,1 @@
 .env
-app/app/Commands/*
-app/app/Imports/*
-app/app/Exports/*
