@@ -116,8 +116,6 @@ class IncomingDocument extends Document
 
     public function getDocumentUsers(): array
     {
-        echo "hello\n";
-//        echo json_encode($this->queryDocumentUsers($this->getId(),980));
         return $this->queryDocumentUsers($this->getId(),980);
     }
 
