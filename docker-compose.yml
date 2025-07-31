@@ -2,6 +2,7 @@ services:
   laravel-zero:
     build:
       context: ./app
+    platform: linux/amd64
     volumes:
       - ./app:/app
     working_dir: /app

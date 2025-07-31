@@ -55,8 +55,7 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
-        Intonate\TinkerZero\TinkerZeroServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
+        Intonate\TinkerZero\TinkerZeroServiceProvider::class
     ],
 
 ];
