@@ -2,80 +2,180 @@
 
 namespace App\Document;
 
-use App\Document\Traits\Simbase;
+use App\DB;
+use App\Document\Traits\TengriBPM;
+use http\Encoding\Stream\Inflate;
 
-abstract class Document implements SimbaseDocument
+abstract class Document
 {
-    use Simbase;
+
+    use TengriBPM;
 
     protected object $document;
-    public function __construct(object $record)
+
+    public function __construct($data)
     {
-        $this->document = $record;
+        $this->document = $data;
     }
 
     public static function fromData(object $data): static {
         return new static($data);
     }
 
-    public function getId(): int
+    // =================================================================================================================
+    // CONCRETE DOCUMENT TYPE SETTINGS
+    // =================================================================================================================
+
+    abstract public static function cardId(): string;
+
+    abstract public static function cardTableName(): string;
+
+    abstract public static function typeSlug(): string;
+
+    public static function completedStateId(): int
     {
-        return $this->document->I_ID;
+        return 7;
     }
 
-    public function getName(): string
-    {
-        return $this->document->S_NAME;
+    // =================================================================================================================
+    // GETTERS
+    // =================================================================================================================
+
+    public function getId(): int {
+        return $this->document->id;
+    }
+    public function getPoolIndex(): string {
+        return $this->getItemDocument()->f_regnumber;
     }
 
-    public function toArray(): array
+    public function getRegisteredToPoolAt(): string {
+        return $this->getItemDocument()->regdate;
+    }
+
+    public function getSecondaryDocumentType(): ?array {
+        return null;
+    }
+
+    public function getRegistrator(): string {
+        $registratorId = $this->getItemDocument()->registratorid;
+        return $this->getEmployee($registratorId);
+    }
+
+    public function getLanguage(): ?string {
+        return null;
+    }
+
+    public function getShortDescription(): string {
+        return $this->getCard()->subject;
+    }
+
+    public function getNote(): ?string {
+        return $this->getCard()->comment;
+    }
+
+    public function getSentFromEsedoAt(): ?string {
+        return null;
+    }
+
+    public function getOutgoingPoolIndex(): ?string {
+        return null;
+    }
+
+    public function getCorrespondenceName(): ?string {
+        return null;
+    }
+
+    public function getAuthorName(): string {
+        return $this->getEmployee($this->document->authorid);
+    }
+
+    public function getRecipients(): string
     {
-        $author = $this->getAuthor();
-        $lastExecutor = $this->getLastExecutor();
-        $signer = $this->getSigner();
-        $registrator = $this->getRegistrator();
-        $secretary = $this->getSecretary();
+        return $this->getAssignedUsers(136);
+    }
+
+    public function getExecutors(): string
+    {
+        return $this->getAssignedUsers(52);
+    }
+
+    public function getAttachments(): array
+    {
+        return DB::table('AttachedFiles')->where('itemid',$this->getId())->get()->map(function($x) {
+            return [
+                'id' => $x->id,
+                'name' => $x->name,
+            ];
+        })->toArray();
+    }
+
+    public function getCreatedAt(): string {
+        return $this->document->created;
+    }
+
+    public function getDocumentCharacter(): ?array {
+        return null;
+    }
+
+    public function getReplyDocumentId(): ?int {
+        return null;
+    }
+
+    public function getReviewers(): string {
+        return $this->getAssignedUsers(39);
+    }
+
+    public function getSigners(): string
+    {
+        return $this->getAssignedUsers([188,40]);
+    }
+
+    public function getDate(): ?string
+    {
+        return null;
+    }
+
+    public function getSecretaryName(): ?string
+    {
+        return null;
+    }
+
+    public function getVisitedParticipators(): ?string
+    {
+        return null;
+    }
+
+
+    public function toArray(): array {
+        $secondaryDocumentType = $this->getSecondaryDocumentType();
+        $documentCharacter = $this->getDocumentCharacter();
         return [
             'id' => $this->getId(),
-            'type' => $this->getDocumentType(),
-            'name' => $this->getName(),
-            'deadline' => $this->getDeadline(),
-            'registered_to_pool_at' => $this->getRegisteredToPoolAt(),
-            'created_at' => $this->getCreatedAt(),
-            'description' => $this->getDescription(),
-            'short_description' => $this->getShortDescription(),
+            'type' => static::typeSlug(),
             'pool_index' => $this->getPoolIndex(),
-            'outgoing_pool_index' => $this->getOutgoingPoolIndex(),
-            'author' => $author ? $this->username($author) : null,
-            'last_executor' => $lastExecutor ? $this->username($lastExecutor) : null,
-            'attachments' => json_encode($this->getAttachments()),
+            'registered_to_pool_at' => $this->getRegisteredToPoolAt(),
+            'secondary_document_type' => $secondaryDocumentType['ru'] ?? null,
+            'registrator' => $this->getRegistrator(),
             'language' => $this->getLanguage(),
-            'delivery_way' => $this->getDeliveryWay(),
-            'control_type' => $this->getControlType(),
-            'secondary_document_type' => $this->getSecondaryDocumentType(),
-            'company' => $this->getCompany(),
+            'short_description' => $this->getShortDescription(),
+            'note' => $this->getNote(),
+            'sent_from_esedo_at' => $this->getSentFromEsedoAt(),
+            'outgoing_pool_index' => $this->getOutgoingPoolIndex(),
             'correspondence_name' => $this->getCorrespondenceName(),
-            'outgoing_date' => $this->getOutgoingDate(),
-            ...array_map(
-                fn($x) => implode(', ', array_map(fn($y) => $this->username($y), $x)),
-                $this->getDocumentUsers()
-            ),
-            'character' => $this->getDocumentCharacter(),
-            'nomenclature' => $this->getNomenclature(),
-            'registrator' => $registrator ? $this->username($registrator) : null,
-            'signer' => $signer ? $this->username($signer) : null,
-            'appealed_by' => $this->getAppealedBy(),
-            'agenda' => $this->getAgenda(),
-            'protocol_date' => $this->getProtocolDate(),
-            'protocol_place' => $this->getProtocolPlace(),
-            'participants' => implode(', ',array_map(
-                fn($x) => $this->username($x),
-                $this->getParticipants()
-            )),
-            'secretary' => $secretary ? $this->username($secretary) : null,
+            'author_name' => $this->getAuthorName(),
+            'recipients' => $this->getRecipients(),
+            'executors' => $this->getExecutors(),
+            'attachments' => json_encode($this->getAttachments()),
+            'created_at' => $this->getCreatedAt(),
+            'document_character' => $documentCharacter['ru'] ?? null,
+            'reply_document_id' => $this->getReplyDocumentId(),
+            'reviewers' => $this->getReviewers(),
+            'signers' => $this->getSigners(),
+            'date' => $this->getDate(),
+            'secretary' => $this->getSecretaryName(),
+            'visited_participators' => $this->getVisitedParticipators(),
         ];
     }
-
 
 
 }

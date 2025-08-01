@@ -2,171 +2,47 @@
 
 namespace App\Document;
 
-use App\Document\Traits\Simbase;
-use Carbon\Carbon;
+use App\DB;
+use App\Document\Document;
 
 class OutgoingDocument extends Document
 {
 
-    use Simbase;
-    public static function documentTypeId(): int
+    public static function cardId(): string
     {
-        return 27;
+        return 60;
     }
 
-    public static function completedStatusId(): int
+    public static function cardTableName(): string
     {
-        return 322;
+        return 'Card_C_0060';
     }
 
-    public function getDocumentType(): string
+    public static function typeSlug(): string
     {
-        return 'outgoing';
+        return 'outgoing_document';
     }
 
-    public function getDeadline(): ?string
-    {
-        return null;
+    public function getSecondaryDocumentType(): ?array {
+        return $this->getEsedoDocumentType();
     }
 
-    public function getRegisteredToPoolAt(): ?string
-    {
-        return $this->queryFieldDate($this->getId(),1467)." ".$this->queryFieldTime($this->getId(),3298);
+    public function getLanguage(): ?string {
+        return $this->getEsedoLanguage();
     }
 
-    public function getCreatedAt(): ?string
+
+    public function getDocumentCharacter(): ?array
     {
-        return Carbon::parse($this->document->I_UTC_CREATED)->addHours(6)->toDateString();
+        $record = DB::table('Card_D_0162')->where('itemid', $this->getCard()->esedoquestion)->first();
+        return $record ? [
+            'ru' => $record->name_ru,
+            'kk' => $record->name_kz,
+        ] : null;
     }
 
-    public function getShortDescription(): ?string
+    public function getReplyDocumentId(): ?int
     {
-        return $this->queryFieldText($this->getId(),1433);
-    }
-    public function getDescription(): ?string
-    {
-        return null;
-    }
-
-    public function getPoolIndex(): ?string
-    {
-        return $this->queryFieldText($this->getId(),1464);
-    }
-
-    public function getOutgoingPoolIndex(): ?string
-    {
-        return null;
-    }
-
-    public function getAuthor(): ?object
-    {
-        return $this->queryFieldUser($this->getId(),1418);
-    }
-
-    public function getLastExecutor(): ?object
-    {
-        return null;
-    }
-
-    public function getAttachments(): array
-    {
-        return $this->queryAttachments($this->getId());
-    }
-
-    public function getLanguage(): ?string
-    {
-        return $this->queryDictionaryValue($this->getId(),1507);
-    }
-
-    public function getDeliveryWay(): ?string
-    {
-        return $this->queryDictionaryValue($this->getId(),3163);
-    }
-
-    public function getControlType(): ?string
-    {
-        return null;
-    }
-
-    public function getSecondaryDocumentType(): ?string
-    {
-        return $this->queryDictionaryValue($this->getId(),2756);
-    }
-
-    public function getCompany(): ?string
-    {
-        return $this->queryDictionaryValue($this->getId(),3054);
-    }
-
-    public function getCorrespondenceName(): ?string
-    {
-        return $this->queryFieldText($this->getId(),1438);
-    }
-
-    public function getOutgoingDate(): ?string
-    {
-        return null;
-    }
-
-    public function getDocumentUsers(): array
-    {
-        return $this->queryDocumentUsers($this->getId(),1473);
-    }
-
-    public static function usersTableRoleFields(): array
-    {
-        return [
-            'reviewers' => 1542
-        ];
-    }
-
-    public function getDocumentCharacter(): ?string
-    {
-        return $this->queryDictionaryValue($this->getId(),1485);
-    }
-
-    public function getNomenclature(): ?string
-    {
-        return $this->queryDictionaryValue($this->getId(),3075, [1,2]);
-    }
-
-    public function getRegistrator(): ?object
-    {
-        return $this->queryFieldUser($this->getId(),1469);
-    }
-
-    public function getSigner(): ?object
-    {
-        return $this->queryFieldUser($this->getId(),1416);
-    }
-
-    public function getAppealedBy(): ?string
-    {
-        return null;
-    }
-
-    public function getAgenda(): ?string
-    {
-        return null;
-    }
-
-    public function getProtocolDate(): ?string
-    {
-        return null;
-    }
-
-    public function getProtocolPlace(): ?string
-    {
-        return null;
-    }
-
-    public function getParticipants(): array
-    {
-        return [];
-    }
-
-    public function getSecretary(): ?object
-    {
-        return null;
+        return $this->getCard()->answeroninboxdocument;
     }
 }

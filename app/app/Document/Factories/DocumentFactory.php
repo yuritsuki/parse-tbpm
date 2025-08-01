@@ -13,12 +13,12 @@ class DocumentFactory
 {
     public static function fromData(object $data): Document
     {
-        return match($data->I_PROCESS ?? null) {
-            14 => InternalDocument::fromData($data),
-            23 => IncomingDocument::fromData($data),
-            27 => OutgoingDocument::fromData($data),
-            36 => Protocol::fromData($data),
-            default => throw new InvalidArgumentException("Unknown I_PROCESS: {$data->I_PROCESS}")
+        return match($data->cardid ?? null) {
+            IncomingDocument::cardId() => IncomingDocument::fromData($data),
+            OutgoingDocument::cardId() => OutgoingDocument::fromData($data),
+            InternalDocument::cardId() => InternalDocument::fromData($data),
+            Protocol::cardId() => Protocol::fromData($data),
+            default => throw new InvalidArgumentException("Unknown Card ID: {$data->cardid}")
         };
     }
 
