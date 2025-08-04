@@ -48,7 +48,7 @@ abstract class Document
         return $this->getItemDocument()->f_regnumber;
     }
 
-    public function getRegisteredToPoolAt(): string {
+    public function getRegisteredToPoolAt(): ?string {
         return $this->getItemDocument()->regdate;
     }
 
@@ -56,9 +56,9 @@ abstract class Document
         return null;
     }
 
-    public function getRegistrator(): string {
+    public function getRegistrator(): ?string {
         $registratorId = $this->getItemDocument()->registratorid;
-        return $this->getEmployee($registratorId);
+        return $registratorId ? $this->getEmployee($registratorId) : null;
     }
 
     public function getLanguage(): ?string {
