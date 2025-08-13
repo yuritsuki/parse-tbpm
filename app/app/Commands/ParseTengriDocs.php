@@ -60,7 +60,7 @@ class ParseTengriDocs extends Command
             '=',
             'dbo.Item_Document.baseitemid'
             )->selectRaw('dbo.Item.*, dbo.Item_Document.cardstateid')
-            ->where('isdeleted',0)->orderByDesc('id')->where('id','<',850618);
+            ->where('isdeleted',0)->orderByDesc('id');
 
         $count = $query->clone()->count();
 
