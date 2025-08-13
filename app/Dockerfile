@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     telnet \
     iproute2 \
     iputils-ping \
+    libpq-dev \
     && export EXTRA_CFLAGS="-I/usr/src/php" \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
@@ -31,7 +32,9 @@ RUN apt-get update && apt-get install -y \
       gd \
       iconv \
       simplexml \
-      xmlreader
+      xmlreader \
+      pgsql \
+      pdo_pgsql
 
 # Установка драйверов sqlsrv и pdo_sqlsrv
 RUN pecl install pdo_sqlsrv sqlsrv \
@@ -40,9 +43,16 @@ RUN pecl install pdo_sqlsrv sqlsrv \
 # Удалим конфликтующие пакеты
 RUN apt-get remove -y libodbc2 libodbcinst2 unixodbc-common
 # Установка Microsoft ODBC Driver for SQL Server
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-    apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql17
+RUN curl -sSL https://packages.microsoft.com/keys/microsoft.asc \
+    | gpg --dearmor \
+    | tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
+
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
+    | tee /etc/apt/sources.list.d/mssql-release.list
+
+# Install SQL Server ODBC driver
+RUN apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql17
+
 # Установка Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

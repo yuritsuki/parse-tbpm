@@ -5,10 +5,12 @@ services:
     platform: linux/amd64
     volumes:
       - ./app:/app
+      - ./microservices/backend/backend/:/var/www/html/app/
     working_dir: /app
     stdin_open: true
     tty: true
     command: /bin/bash
+    network_mode: host
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
@@ -19,4 +21,9 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      WS_DB_HOST: ${WS_DB_HOST}
+      WS_DB_PORT: ${WS_DB_PORT}
+      WS_DB_DATABASE: ${WS_DB_DATABASE}
+      WS_DB_USERNAME: ${WS_DB_USERNAME}
+      WS_DB_PASSWORD: ${WS_DB_PASSWORD}
 
